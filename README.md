@@ -56,10 +56,10 @@ python generate_synthetic_sentences.py
 If you use this code or the associated data in your research, please cite:
 
 ```bibtex
-@inproceedings{cohen2025scaling,
+@inproceedings{cohen2026scaling,
   title     = {Scaling Sentence Similarity for Classical Tibetan with Automatic Annotations},
-  author    = {Cohen, Shay and others},
-  year      = {2025}
+  author    = {Cohen, Shay et al.},
+  year      = {2026}
 }
 ```
 
