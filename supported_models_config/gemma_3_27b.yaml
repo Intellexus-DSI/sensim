@@ -1,0 +1,14 @@
+mode: complete
+
+local_inference: true
+model: google/gemma-3-27b-it
+temperature: 0
+
+use_rate_limiter: true
+requests_per_second: 1
+check_every_n_seconds: 0.1
+
+batched: true
+llms_prompt_batch_size: 32
+trials_if_hallucinated: 1
+seed: 42

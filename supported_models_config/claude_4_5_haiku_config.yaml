@@ -1,0 +1,16 @@
+mode: complete
+
+provider: anthropic
+api_key_env: ANTHROPIC_API_KEY
+
+model: claude-haiku-4-5-20251001
+temperature: 0
+
+use_rate_limiter: true
+requests_per_second: 10
+check_every_n_seconds: 0.1
+
+batched: true
+llms_prompt_batch_size: 32
+trials_if_hallucinated: 1
+seed: 42

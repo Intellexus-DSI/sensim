@@ -1,0 +1,195 @@
+# ============================================================================
+# sensim — Configuration Template
+# ============================================================================
+# Copy this file to config.yaml and adjust values as needed.
+# All keys are optional — sensible defaults are built into each module.
+# Priority order: CLI arguments > config.yaml > built-in defaults
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# Paths & Environment
+# ---------------------------------------------------------------------------
+
+# Root directory for all generated outputs (results, logs, checkpoints).
+# Input data (data/) stays relative to the project root.
+base_dir: "/repositories/sensim"
+
+# HuggingFace model/tokenizer cache directory (sets HF_HOME env var).
+# hf_cache_dir: "/repositories/.cache/huggingface"
+
+# Comma-separated CUDA device IDs to expose (sets CUDA_VISIBLE_DEVICES env var).
+# cuda_visible_devices: "0,1,3"
+
+# ---------------------------------------------------------------------------
+# Active Sampling Pipeline
+# ---------------------------------------------------------------------------
+
+# Total number of active-sampling iterations to run.
+# number_of_iterations: 30
+
+# Dataset file of text segments used as the corpus for sampling.
+# segments_dataset: "merged_kangyur_tengyur_segments_v2.xlsx"
+
+# Skip validation during training; only evaluate on all_gold_pairs_1000_scored.xlsx.
+# no_train_eval: true
+
+# Scoring strategy for annotating candidate pairs: "bws" or "local_models".
+# scoring_strategy: "local_models"
+
+# ---------------------------------------------------------------------------
+# SBERT Model (models/sbert.py)
+# ---------------------------------------------------------------------------
+
+# HuggingFace model ID used as the base encoder.
+# hf_base_model: "Shailu1492/tibetan-mbert-v1-anchor-positive"
+
+# Training hyperparameters
+# num_train_epochs: 5
+# learning_rate: 2e-5
+# warmup_ratio: 0.1
+# per_device_train_batch_size: 32
+# gradient_accumulation_steps: 16
+
+# Evaluation & saving
+# eval_strategy: "epoch"          # "epoch", "steps", or "no"
+# logging_strategy: "epoch"
+# save_strategy: "best"
+# load_best_model_at_end: true
+# greater_is_better: true
+# save_total_limit: 2
+
+# Learning rate scheduler: "reduce_lr_on_plateau", "linear", "cosine", etc.
+# lr_scheduler_type: "reduce_lr_on_plateau"
+
+# Pooling strategy for sentence embeddings: "weightedmean", "mean", "cls", etc.
+# pooling_strategy: "weightedmean"
+
+# Loss functions
+# supervised_loss_type: "COSENT_LOSS"
+# unsupervised_loss_type: "CONTRASTIVE_TENSION_LOSS"
+
+# Column names in the data files
+# sentence_col: "Segmented_Text_EWTS"
+# embeddings_col: "embeddings"
+
+# Batch size for exporting core embeddings (encode step, not training).
+# export_core_embeddings_batch_size: 128
+
+# Track average cosine distance shift between consecutive iteration embeddings.
+# Computed on the first 10,000 embeddings. Logged and recorded in the results CSV.
+# track_embedding_drift: false
+
+# Precision flags (auto-detected by default based on hardware)
+# bf16: true
+# fp16: false
+# tf32: true
+
+# Random seed for reproducibility.
+# seed: 42
+
+# ---------------------------------------------------------------------------
+# FAISS Pair Sampler (candidates_builder/sim_pairs_sampler.py)
+# ---------------------------------------------------------------------------
+
+# Number of sentence pairs to sample per iteration.
+# k: 250
+
+# Number of nearest neighbors FAISS returns per query.
+# search_k: 20
+
+# Number of pairs to collect per batch (also used as the FAISS query batch size).
+# pairs_per_batch: 250
+
+# Cosine-similarity (inner-product) distance window for candidate pairs.
+# minimum_distance: 0.880
+# maximum_distance: 0.980
+
+# Iterations over which the minimum-distance threshold decays logarithmically.
+# max_iterations_for_distance_filtering: 11
+
+# Minimum Wylie syllable edit distance between paired sentences.
+# Pairs with distance <= this value are discarded to ensure linguistic diversity.
+# min_syllable_distance: 5
+
+# ---------------------------------------------------------------------------
+# LLM Committee (llms/llms_eval.py)
+# ---------------------------------------------------------------------------
+
+# List of LLM models used as an annotation committee.
+# llms_committee:
+#   - "google/gemma-3-27b-it"
+
+# Whether to run LLMs locally (true) or via API (false).
+# local_inference: false
+
+# Sampling temperature for LLM calls.
+# temperature: 0
+
+# Rate limiter settings (for API-based inference).
+# use_rate_limiter: true
+# requests_per_second: 1.0
+# check_every_n_seconds: 10
+
+# Prompt batching
+# batched: true
+# llms_prompt_batch_size: 20
+
+# Number of retries when the LLM hallucinates an invalid response.
+# trials_if_hallucinated: 1
+
+# ---------------------------------------------------------------------------
+# LLM Sentence Generator (llms/sentences_generator.py)
+# ---------------------------------------------------------------------------
+
+# Similarity targets for synthetic sentence generation.
+# similarities:
+#   - 0.9
+
+# Batch size for sentence generation requests.
+# batch_size: 16
+
+# ---------------------------------------------------------------------------
+# Local Models Ensemble Scoring (bws_processing/local_models_scorer.py)
+# ---------------------------------------------------------------------------
+
+# Ensemble of local models for scoring candidate pairs.
+# Each entry needs: name, type ("bi_encoder" or "reranker"), weight (summing to ~1).
+# Optional per-model: batch_size (default 4), instruction (for rerankers).
+#
+# local_models_ensemble:
+#   - name: "Qwen/Qwen3-Reranker-8B"
+#     type: "reranker"
+#     instruction: "Given a web search query, retrieve relevant passages that answer the query"
+#     weight: 0.34
+#     batch_size: 1
+#   - name: "BAAI/bge-multilingual-gemma2"
+#     type: "bi_encoder"
+#     weight: 0.33
+#   - name: "google/embeddinggemma-300m"
+#     type: "bi_encoder"
+#     weight: 0.33
+
+# ---------------------------------------------------------------------------
+# BWS (Best-Worst Scaling) Processing
+# ---------------------------------------------------------------------------
+
+# Directory containing the BWS Perl scripts.
+# tuples_script_dir: "/home/shay/Best-Worst-Scaling-Scripts"
+# scoring_script_dir: "/home/shay/Best-Worst-Scaling-Scripts"
+
+# Script filenames
+# tuples_script_file_name: "generate-BWS-tuples.pl"
+# scoring_script_file_name: "get-scores-from-BWS-annotations-counting.pl"
+
+# ---------------------------------------------------------------------------
+# Reranker Labelset Builder (reranker_labelset_builder.py)
+# ---------------------------------------------------------------------------
+
+# Override the output directory for reranker labelset results.
+# Defaults to: <base_dir>/results/reranker_labelset
+# reranker_results_dir: "/repositories/sensim/results/reranker_labelset"
+
+# ---------------------------------------------------------------------------
+# API Keys (stored separately in keys.yaml)
+# ---------------------------------------------------------------------------
+# keys_path: "./keys.yaml"

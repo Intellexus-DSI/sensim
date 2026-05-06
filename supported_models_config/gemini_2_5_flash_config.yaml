@@ -1,0 +1,17 @@
+mode: complete
+
+provider: google_genai
+api_key_env: GOOGLE_API_KEY
+
+model: gemini-2.5-flash
+
+temperature: 0.1
+
+use_rate_limiter: true
+requests_per_second: 10
+check_every_n_seconds: 0.1
+
+batched: true
+llms_prompt_batch_size: 32
+trials_if_hallucinated: 1
+seed: 42

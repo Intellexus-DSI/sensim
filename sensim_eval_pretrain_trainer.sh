@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# Use GPU 0
+set -a
+source .env
+set +a
+
+export CUDA_VISIBLE_DEVICES=2
+source "$ENVIRONMENT"
+
+# Generic Cartesian Product Function using Loops
+# Usage: cartesian_product callback_function array1_name array2_name ...
+cartesian_product() {
+    local callback=$1
+    shift
+    local array_names=("$@")
+    local num_arrays=${#array_names[@]}
+
+    # Return if no arrays provided
+    if [ $num_arrays -eq 0 ]; then
+        return
+    fi
+
+    # Get lengths of all arrays
+    local lengths=()
+    for array_name in "${array_names[@]}"; do
+        local -n arr="$array_name"
+        lengths+=(${#arr[@]})
+    done
+
+    # Initialize indices array (all zeros)
+    local indices=()
+    for ((i=0; i<num_arrays; i++)); do
+        indices+=(0)
+    done
+
+    # Main loop: iterate through all combinations
+    while true; do
+        # Build current combination
+        local combination=()
+        for ((i=0; i<num_arrays; i++)); do
+            local array_name="${array_names[$i]}"
+            local -n current_arr="$array_name"
+            local idx=${indices[$i]}
+            combination+=("${current_arr[$idx]}")
+        done
+
+        # Execute callback with current combination
+        $callback "${combination[@]}"
+
+        # Inner loop: increment indices (like an odometer)
+        local pos=$((num_arrays - 1))
+        while [ $pos -ge 0 ]; do
+            indices[$pos]=$((indices[$pos] + 1))
+
+            # Check if we need to carry over
+            if [ ${indices[$pos]} -lt ${lengths[$pos]} ]; then
+                break  # No carry needed
+            fi
+
+            # Carry over: reset this position and move to next
+            indices[$pos]=0
+            pos=$((pos - 1))
+        done
+
+        # If we've carried past the first position, we're done
+        if [ $pos -lt 0 ]; then
+            break
+        fi
+    done
+}
+
+model_mbert_tibetan="OMRIDRORI/mbert-tibetan-continual-wylie-final"
+model_mpnet_base="sentence-transformers/all-mpnet-base-v2"
+model_MiniLM_L12="sentence-transformers/all-MiniLM-L12-v2"
+model_LaBSE="sentence-transformers/LaBSE"
+model_TiBERT="CMLI-NLP/TiBERT"
+
+modalsCross=("OMRIDRORI/mbert-tibetan-continual-wylie-final" "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1" "cross-encoder/ms-marco-MiniLM-L6-v2" "CMLI-NLP/TiBERT")
+modals=("OMRIDRORI/mbert-tibetan-continual-wylie-final" "sentence-transformers/all-mpnet-base-v2" "sentence-transformers/all-MiniLM-L12-v2" "sentence-transformers/LaBSE" "CMLI-NLP/TiBERT")
+learning_rate=("2e-5")
+epochs=("10")
+pooling=("cls" "cls_avg" "mean")
+cosine_w=("0.01" "0.001")
+angle_w=("0.01" "0.02")
+warmup_steps=("100")
+
+
+data_dirA=("./data/NewDataA-D")
+train_dirA=("./data/NewDataA-D")
+train_filenameA_Synthetic=("llms_pairs_A_shuffled_2500_scored.xlsx")
+train_filenameA_Gold=("train_pairs_A_shuffled_600_scored.xlsx")
+validation_filenameA=("validation_pairs_A_shuffled_150_scored.xlsx")
+test_filenameA=("test_pairs_A_shuffled_250_scored.xlsx")
+test2_filenameA=("test_pairs_A_shuffled_no_positives_scored.xlsx")
+result_filenameA_Cross=("A-Synthetic-Gold-Cross-pretrain-trainer.csv")
+result_filenameA_Cross_Gold=("A-Gold-Synthetic-Cross-pretrain-trainer.csv")
+model_dirA=("ckpts/sts-b/A-Synthetic-pretrain-trainer")
+
+data_dirB=("./data/NewDataA-D")
+train_dirB=("./data/NewDataA-D")
+train_filenameB_Synthetic=("llms_pairs_B_shuffled_2500_scored.xlsx")
+train_filenameB_Gold=("train_pairs_B_shuffled_600_scored.xlsx")
+validation_filenameB=("validation_pairs_B_shuffled_150_scored.xlsx")
+test_filenameB=("test_pairs_B_shuffled_250_scored.xlsx")
+test2_filenameB=("test_pairs_B_shuffled_no_positives_scored.xlsx")
+result_filenameB_Cross=("B-Synthetic-Gold-Cross-pretrain-trainer.csv")
+result_filenameB_Cross_Gold=("B-Gold-Synthetic-Cross-pretrain-trainer.csv")
+model_dirB=("ckpts/sts-b/B-Synthetic-pretrain-trainer")
+
+
+data_dirC=("./data/NewDataA-D")
+train_dirC=("./data/NewDataA-D")
+train_filenameC_Synthetic=("llms_pairs_C_shuffled_2500_scored.xlsx")
+train_filenameC_Gold=("train_pairs_C_shuffled_600_scored.xlsx")
+validation_filenameC=("validation_pairs_C_shuffled_150_scored.xlsx")
+test_filenameC=("test_pairs_C_shuffled_250_scored.xlsx")
+test2_filenameC=("test_pairs_C_shuffled_no_positives_scored.xlsx")
+result_filenameC_Cross=("C-Synthetic-Gold-Cross-pretrain-trainer.csv")
+result_filenameC_Cross_Gold=("C-Gold-Synthetic-Cross-pretrain-trainer.csv")
+model_dirC=("ckpts/sts-b/C-Synthetic-pretrain-trainer")
+
+data_dirD=("./data/NewDataA-D")
+train_dirD=("./data/NewDataA-D")
+train_filenameD_Synthetic=("llms_pairs_D_shuffled_2500_scored.xlsx")
+train_filenameD_Gold=("train_pairs_D_shuffled_600_scored.xlsx")
+validation_filenameD=("validation_pairs_D_shuffled_150_scored.xlsx")
+test_filenameD=("test_pairs_D_shuffled_250_scored.xlsx")
+test2_filenameD=("test_pairs_D_shuffled_no_positives_scored.xlsx")
+result_filenameD_Cross=("D-Synthetic-Gold-Cross-pretrain-trainer.csv")
+result_filenameD_Cross_Gold=("D-Gold-Synthetic-Cross-pretrain-trainer.csv")
+model_dirD=("ckpts/sts-b/D-Synthetic-pretrain-trainer")
+
+run_experimentAOnCrossEncoder() {
+    echo "Arguments: $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13}"
+    python cross_sbert_trainer_cosine_annealing.py --hf_base_model "$1" --epochs "$2" --learning_rate "$3" --data_dir "$4" --train_dir "$5" --train_filenames "$6" "${11}" --validation_filename "$7" --test_filenames "$8" "$9" --results_filename "${10}" --model_dir "${12}" --warmup_steps "${13}"
+}
+
+## 3. Cross-Encoder Runs (11 arguments: modal, epochs, lr, data, train_dir, train1, val, test1, test2, result, train2)
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirA train_dirA train_filenameA_Synthetic validation_filenameA test_filenameA test2_filenameA result_filenameA_Cross train_filenameA_Gold model_dirA warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirB train_dirB train_filenameB_Synthetic validation_filenameB test_filenameB test2_filenameB result_filenameB_Cross train_filenameB_Gold model_dirB warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirC train_dirC train_filenameC_Synthetic validation_filenameC test_filenameC test2_filenameC result_filenameC_Cross train_filenameC_Gold model_dirC warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirD train_dirD train_filenameD_Synthetic validation_filenameD test_filenameD test2_filenameD result_filenameD_Cross train_filenameD_Gold model_dirD warmup_steps
+
+# Gold First
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirA train_dirA train_filenameA_Gold validation_filenameA test_filenameA test2_filenameA result_filenameA_Cross_Gold train_filenameA_Synthetic model_dirA warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirB train_dirB train_filenameB_Gold validation_filenameB test_filenameB test2_filenameB result_filenameB_Cross_Gold train_filenameB_Synthetic model_dirB warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirC train_dirC train_filenameC_Gold validation_filenameC test_filenameC test2_filenameC result_filenameC_Cross_Gold train_filenameC_Synthetic model_dirC warmup_steps
+cartesian_product run_experimentAOnCrossEncoder modalsCross epochs learning_rate data_dirD train_dirD train_filenameD_Gold validation_filenameD test_filenameD test2_filenameD result_filenameD_Cross_Gold train_filenameD_Synthetic model_dirD warmup_steps
+
+# deactivate
+#source .venv/bin/deactivate

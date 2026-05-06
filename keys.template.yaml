@@ -1,0 +1,5 @@
+OPENAI_API_KEY: "Your-OpenAI-API-Key-Here"
+ANTHROPIC_API_KEY: "Your-Anthropic-API-Key-Here"
+GOOGLE_API_KEY: "Your-Google-API-Key-Here"
+HF_TOKEN: "Your-Hugging-Face-Token-Here"
+# WANDB_TOKEN: "Your-WandB-Token-Here" (uncomment if needed)

@@ -1,0 +1,12 @@
+model: gemini-embedding-001
+
+api_key_env: GOOGLE_API_KEY
+keys_path: keys.yaml
+
+task_type: SEMANTIC_SIMILARITY
+
+# Number of sentences per embedding API request (max ~100 recommended)
+batch_size: 100
+
+# Free tier: 1500 RPM; paid tier: higher
+requests_per_minute: 1500
